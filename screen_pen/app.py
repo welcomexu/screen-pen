@@ -20,18 +20,19 @@ class ControlPanel(QWidget):
     def setup_ui(self):
         # 主布局使用垂直布局
         self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(5, 8, 5, 8)  # 减小边距使面板更窄
-        self.layout.setSpacing(10)  # 适当减小控件间距
+        self.layout.setContentsMargins(3, 5, 3, 5)  # 更小的边距使面板更窄
+        self.layout.setSpacing(5)  # 减小控件间距
         
         # === 绘图模式开关 ===
-        self.draw_mode_btn = QPushButton("开启绘图")
+        self.draw_mode_btn = QPushButton("开启")
         self.draw_mode_btn.setCheckable(True)  # 让按钮可以切换状态
         self.draw_mode_btn.setStyleSheet("""
             QPushButton {
                 background-color: #5cb85c;
                 color: white;
                 font-weight: bold;
-                padding: 6px;
+                padding: 4px;
+                font-size: 10px;
             }
             QPushButton:checked {
                 background-color: #d9534f;
@@ -50,11 +51,12 @@ class ControlPanel(QWidget):
         # === 工具选择区 ===
         self.tool_label = QLabel("工具:")
         self.tool_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.tool_label.setMaximumHeight(15)  # 限制标签高度
         self.layout.addWidget(self.tool_label)
         
         self.tool_combo = QComboBox()
         self.tool_combo.addItems(["画笔", "直线", "矩形", "椭圆", "橡皮"])
-        self.tool_combo.setFixedHeight(25)  # 增加高度改善可点击性
+        self.tool_combo.setFixedHeight(22)  # 稍微减小高度
         self.tool_combo.setFocusPolicy(Qt.FocusPolicy.StrongFocus)  # 确保能够接收焦点
         self.layout.addWidget(self.tool_combo)
         
@@ -64,14 +66,16 @@ class ControlPanel(QWidget):
         # === 颜色选择区 ===
         self.color_label = QLabel("颜色:")
         self.color_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.color_label.setMaximumHeight(15)  # 限制标签高度
         self.layout.addWidget(self.color_label)
         
-        # 将"选择颜色"改为"颜色"
-        self.color_btn = QPushButton("颜色")
+        # 将"选择颜色"改为"颜色"，进一步缩小按钮
+        self.color_btn = QPushButton("选色")
+        self.color_btn.setFixedHeight(22)
         self.layout.addWidget(self.color_btn)
         
         self.color_indicator = QWidget()
-        self.color_indicator.setFixedHeight(20)
+        self.color_indicator.setFixedHeight(15)  # 减小颜色指示器高度
         self.color_indicator.setStyleSheet("background-color: #FF0000; border: 1px solid #999;")
         self.layout.addWidget(self.color_indicator)
         
@@ -81,34 +85,50 @@ class ControlPanel(QWidget):
         # === 线宽选择区 ===
         self.width_label = QLabel("线宽:")
         self.width_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.width_label.setMaximumHeight(15)  # 限制标签高度
         self.layout.addWidget(self.width_label)
+        
+        # 线宽值和滑块水平布局
+        width_layout = QHBoxLayout()
+        width_layout.setSpacing(2)
         
         self.width_slider = QSlider(Qt.Orientation.Horizontal)
         self.width_slider.setRange(1, 20)
         self.width_slider.setValue(6)  # 修改默认值为6
-        self.layout.addWidget(self.width_slider)
         
         self.width_value = QLabel("6")  # 修改默认显示值为6
         self.width_value.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.layout.addWidget(self.width_value)
+        self.width_value.setFixedWidth(15)
+        
+        width_layout.addWidget(self.width_slider)
+        width_layout.addWidget(self.width_value)
+        
+        self.layout.addLayout(width_layout)
         
         # 添加分隔线
         self.add_separator()
         
         # === 操作按钮区 ===
-        # 将"清除全部"改为"清屏"，移除截屏按钮
+        # 修改为垂直布局
+        btn_layout = QVBoxLayout()
+        btn_layout.setSpacing(2)
+        
         self.clear_btn = QPushButton("清屏")
         self.quit_btn = QPushButton("退出")
         
-        self.layout.addWidget(self.clear_btn)
-        self.layout.addWidget(self.quit_btn)
-        
-        # 设置按钮样式
+        # 设置按钮最小高度和宽度
         for btn in [self.clear_btn, self.quit_btn]:
-            btn.setMinimumHeight(32)  # 稍微调整按钮高度
+            btn.setMinimumHeight(25)  # 略微减小按钮高度
+            btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        
+        btn_layout.addWidget(self.clear_btn)
+        btn_layout.addWidget(self.quit_btn)
+        
+        self.layout.addLayout(btn_layout)
         
         # 设置信号连接
         self.width_slider.valueChanged.connect(self.update_width_label)
+        # 注意: 颜色按钮的信号连接会在ScreenPenApp中设置，这里不直接处理
         
         # 设置整体风格和大小
         self.setStyleSheet("""
@@ -116,24 +136,26 @@ class ControlPanel(QWidget):
                 background-color: rgba(240, 240, 240, 230);
             }
             QPushButton {
-                padding: 4px;
-                border-radius: 4px;
+                padding: 2px;
+                border-radius: 3px;
                 background-color: rgba(220, 220, 220, 230);
+                font-size: 10px;
             }
             QPushButton:hover {
                 background-color: rgba(200, 200, 200, 230);
             }
             QLabel {
-                font-size: 11px;
+                font-size: 10px;
                 font-weight: bold;
             }
             QComboBox {
-                padding: 2px;
-                border-radius: 4px;
-                min-height: 20px;
+                padding: 1px;
+                border-radius: 3px;
+                min-height: 18px;
+                font-size: 12px;
             }
             QComboBox::drop-down {
-                width: 20px;
+                width: 15px;
             }
             QFrame[frameShape="4"] {
                 background-color: rgba(180, 180, 180, 150);
@@ -141,8 +163,8 @@ class ControlPanel(QWidget):
             }
         """)
         
-        # 减小固定宽度，使面板更窄
-        self.setFixedWidth(80)  # 从100减为80
+        # 大幅减小固定宽度
+        self.setFixedWidth(58)  # 从80减为58
         
     def add_separator(self):
         """添加水平分隔线"""
@@ -157,9 +179,9 @@ class ControlPanel(QWidget):
     def toggle_draw_mode(self, is_active):
         """切换绘图模式时更新按钮文字"""
         if is_active:
-            self.draw_mode_btn.setText("停用绘图")
+            self.draw_mode_btn.setText("停用")
         else:
-            self.draw_mode_btn.setText("开启绘图")
+            self.draw_mode_btn.setText("开启")
         
     def showEvent(self, event):
         """窗口显示时，设置位置到屏幕右侧"""
@@ -246,7 +268,7 @@ class ScreenPenApp(QMainWindow):
         
         # 连接信号
         self.control_panel.tool_combo.currentTextChanged.connect(self.change_tool)
-        self.control_panel.color_btn.clicked.connect(self.change_color)
+        self.control_panel.color_btn.clicked.connect(self.change_color)  # 确保此信号连接被正确设置
         self.control_panel.width_slider.valueChanged.connect(self.change_width)
         self.control_panel.clear_btn.clicked.connect(self.clear_canvas)
         self.control_panel.quit_btn.clicked.connect(self.close_app)
@@ -330,10 +352,13 @@ class ScreenPenApp(QMainWindow):
         self.current_tool = tool_name
         
     def change_color(self):
-        color = QColorDialog.getColor(self.pen_color)
-        if color.isValid():
-            self.pen_color = color
-            self.control_panel.color_indicator.setStyleSheet(f"background-color: {color.name()};")
+        try:
+            color = QColorDialog.getColor(self.pen_color, self)
+            if color.isValid():
+                self.pen_color = color
+                self.control_panel.color_indicator.setStyleSheet(f"background-color: {color.name()}; border: 1px solid #999;")
+        except Exception as e:
+            print(f"颜色选择出错: {e}")
             
     def change_width(self, width):
         self.pen_width = width
